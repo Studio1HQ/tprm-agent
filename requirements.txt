@@ -1,0 +1,10 @@
+requests
+fastapi
+uvicorn
+python-dotenv
+pydantic
+openai
+beautifulsoup4
+playwright
+openhands-sdk
+openhands-tools
