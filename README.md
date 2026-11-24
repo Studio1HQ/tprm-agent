@@ -1,427 +1,216 @@
-# TPRM Agent - Autonomous Third-Party Risk Management
+<div align="center">
 
-An AI-powered agent that automates vendor adverse media investigations using Bright Data's web scraping infrastructure, OpenAI for risk analysis, and OpenHands SDK for intelligent monitoring script generation.
+<img src="https://raw.githubusercontent.com/Studio1HQ/Studio1HQ/main/assets/banners/tprm-agent.webp" alt="Vendor Risk Agent with Bright Data: Automated adverse media checks on vendors with SERP API and Web Unlocker" width="100%" />
+
+<br />
+<br />
+
+# Vendor Risk Agent with Bright Data
+
+### Automated adverse media checks on vendors with SERP API and Web Unlocker
+
+A FastAPI service that searches for vendor red flags with the Bright Data SERP API, reads pages through Web Unlocker, scores risk with OpenAI, and generates monitoring scripts with the OpenHands SDK.
+
+<br />
+
+[![Built by Studio1](https://img.shields.io/badge/Built_by_Studio1-f97316?style=for-the-badge&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNjAgMTYwIiBmaWxsPSJub25lIj48cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0iTTAgMzVDMCAxNi42ODA3IDE0LjA3NDQgMS42NDg0NCAzMiAwLjEyNjk1M1YxNDFINTEuMDUyM0M1Mi40MzA4IDEzNy4zNDQgNTQuNzQ0NiAxMzMuNjg5IDU3Ljk5MzggMTMwLjAzM0M2MS4xNDQ2IDEyNi41MDggNjQuNjg5MiAxMjMuNDQgNjguNjI3NyAxMjAuODI5QzcyLjU2NjIgMTE4LjM0OSA3Ni4zNTY5IDExNi43ODIgODAgMTE2LjEyOVY4Ni43NTQ0Qzc1LjQ3MDggODcuOTI5MiA3MS4zODQ2IDg5LjY5MTkgNjcuNzQxNSA5Mi4wNDE1QzY0IDk0LjUyMjUgNjAuNzUwOCA5Ny40NiA1Ny45OTM4IDEwMC44NTRDNTYuNTM0NSAxMDIuNzIgNTUuMjU0NSAxMDQuNjU5IDU0LjE1MzkgMTA2LjY3MVYwSDEyNUMxNDQuMzMgMCAxNjAgMTUuNjY5OSAxNjAgMzVWMTI1QzE2MCAxNDQuMzMgMTQ0LjMzIDE2MCAxMjUgMTYwSDEyNFYxOEgxMDQuOTQ4QzEwMy41NjkgMjEuNjgxNiAxMDEuMjU1IDI1LjM2MjggOTguMDA2MiAyOS4wNDQ0Qzk0Ljg1NTQgMzIuNTk0MiA5MS4zMTA4IDM1LjY4NDEgODcuMzcyMyAzOC4zMTRDODMuNDMzOCA0MC44MTIgNzkuNjQzMSA0Mi4zODk2IDc2IDQzLjA0NzRWNzIuNjMwNEM4MC41MjkyIDcxLjQ0NzMgODQuNjE1NCA2OS42NzI0IDg4LjI1ODUgNjcuMzA1N0M5MiA2NC44MDc2IDk1LjI0OTIgNjEuODQ5MSA5OC4wMDYyIDU4LjQzMDdDOTkuNDY1NSA1Ni41NTEzIDEwMC43NDUgNTQuNTk4NiAxMDEuODQ2IDUyLjU3MjNWMTYwSDM1QzE1LjY3IDE2MCAwIDE0NC4zMyAwIDEyNVYzNVoiIGZpbGw9IiNmZmZmZmYiLz48L3N2Zz4K)](https://studio1hq.com)
+[![Built with Bright Data](https://img.shields.io/badge/Built_with_Bright_Data-141414?style=for-the-badge)](https://brightdata.com)
+
+[Bright Data docs](https://docs.brightdata.com) &nbsp;·&nbsp; [Bright Data](https://brightdata.com) &nbsp;·&nbsp; [More examples](https://github.com/Studio1HQ) &nbsp;·&nbsp; [studio1hq.com](https://studio1hq.com)
+
+</div>
+
+<br />
+
+## Overview
+
+An agent for third-party risk management. Give it a vendor name and it searches for adverse media, reads the pages it finds, scores the risk, and can generate monitoring scripts that keep checking the vendor's sources.
+
+It uses three Bright Data products: the SERP API to search Google for red flags, Web Unlocker to read pages behind paywalls and CAPTCHAs, and an optional Browser API for JavaScript-heavy sites. OpenAI scores the risk, and the OpenHands SDK writes the monitoring scripts. A FastAPI service exposes it over REST.
 
 ## Features
 
-- **Automated Vendor Investigation**: Search for adverse media across multiple risk categories (litigation, fraud, financial issues, regulatory violations, operational risks)
-- **Intelligent Web Scraping**: Uses Bright Data SERP API and Web Unlocker to bypass paywalls, CAPTCHAs, and access protected content
-- **AI Risk Analysis**: OpenAI analyzes extracted content and provides severity scores with actionable recommendations
-- **Auto-Generated Monitoring**: OpenHands SDK creates production-ready Python scripts that continuously monitor vendor sources
-- **REST API**: FastAPI-based endpoints for easy integration into existing systems
-- **Browser Automation**: Optional Bright Data Browser API support for JavaScript-heavy sites and complex workflows
+- **Adverse media search**: Litigation, fraud, financial, regulatory and operational risk categories.
+- **SERP API discovery**: Searches Google for red flags per category.
+- **Web Unlocker access**: Extracts content from protected pages.
+- **AI risk analysis**: OpenAI returns severity (low, medium, high, critical), findings and recommended actions.
+- **Generated monitors**: OpenHands SDK writes Python scripts into `scripts/generated/`.
+- **REST API**: FastAPI endpoints with interactive docs.
+- **Browser API (optional)**: Form filling and extraction for complex sites.
 
-## Architecture
+## Tech stack
 
-```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│   DISCOVERY     │────▶│     ACCESS      │────▶│     ACTION      │
-│   (SERP API)    │     │ (Web Unlocker)  │     │ (OpenAI + SDK)  │
-└─────────────────┘     └─────────────────┘     └─────────────────┘
-        │                       │                       │
-   Search Google          Bypass paywalls         Analyze risks
-   for red flags          and CAPTCHAs           Generate scripts
-```
+| Layer | Tool |
+| --- | --- |
+| Search | [Bright Data SERP API](https://docs.brightdata.com/scraping-automation/serp-api/introduction) |
+| Page access | [Bright Data Web Unlocker](https://docs.brightdata.com/scraping-automation/web-unlocker/introduction) |
+| Browser (optional) | [Bright Data Browser API](https://docs.brightdata.com/scraping-automation/scraping-browser/introduction) with Playwright |
+| Risk analysis | [OpenAI](https://platform.openai.com/docs) |
+| Script generation | [OpenHands SDK](https://docs.openhands.dev/sdk/getting-started) |
+| API | [FastAPI](https://fastapi.tiangolo.com) |
+| Deployment | Railway (`Procfile`) |
 
-## Prerequisites
+## Getting started
+
+### Prerequisites
 
 - Python 3.12 or higher
-- [Bright Data account](https://brightdata.com/) with API access
-- [OpenAI API key](https://platform.openai.com/api-keys)
-- [OpenHands Cloud account](https://openhands.dev/) or your own LLM API key
+- A [Bright Data](https://brightdata.com) account with API access
+- An [OpenAI API key](https://platform.openai.com/api-keys)
+- An [OpenHands Cloud](https://openhands.dev) account or your own LLM API key
 
-## Quick Start
-
-### 1. Clone and Setup
+### Installation
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/Studio1HQ/tprm-agent.git
 cd tprm-agent
-
-# Create virtual environment
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# Install dependencies
 pip install -r requirements.txt
 ```
 
-### 2. Configure Environment Variables
+### Environment variables
 
-Create a `.env` file in the project root:
+Create a `.env` file in the project root.
 
-```env
-# Bright Data API Token (for SERP API)
-BRIGHT_DATA_API_TOKEN=your_api_token
+| Variable | Description |
+| --- | --- |
+| `BRIGHT_DATA_API_TOKEN` | Bright Data API token. |
+| `BRIGHT_DATA_SERP_ZONE` | SERP API zone name. |
+| `BRIGHT_DATA_UNLOCKER_ZONE` | Web Unlocker zone name. |
+| `BRIGHT_DATA_CUSTOMER_ID` | Customer ID for Web Unlocker (in `config.py`). |
+| `BRIGHT_DATA_UNLOCKER_PASSWORD` | Web Unlocker zone password (in `config.py`). |
+| `BRIGHT_DATA_BROWSER_USER` | Optional. Browser API username. |
+| `BRIGHT_DATA_BROWSER_PASSWORD` | Optional. Browser API password. |
+| `OPENAI_API_KEY` | OpenAI key for risk analysis. |
+| `LLM_API_KEY` | API key for OpenHands script generation. |
+| `LLM_MODEL` | Model for OpenHands, for example `openai/gpt-4o`. |
 
-# Bright Data SERP Zone
-BRIGHT_DATA_SERP_ZONE=your_serp_zone_name
+Zones are created in the Bright Data dashboard under Proxies and Scraping Infrastructure: add a SERP API zone, a Web Unlocker zone and, optionally, a Scraping Browser.
 
-# Bright Data Web Unlocker Zone
-BRIGHT_DATA_UNLOCKER_ZONE=your_unlocker_zone_name
+### Run
 
-# OpenAI (for risk analysis)
-OPENAI_API_KEY=your_openai_api_key
-
-# OpenHands (for agentic script generation)
-LLM_API_KEY=your_llm_api_key
-LLM_MODEL=openai/gpt-4o
-```
-
-### 3. Run Locally
-
-**Start the API server:**
+Start the API:
 
 ```bash
 python -m uvicorn api.main:app --reload
 ```
 
-Visit `http://localhost:8000/docs` for interactive API documentation.
-
-**Run a direct investigation:**
+Open [http://localhost:8000/docs](http://localhost:8000/docs) for interactive API docs. To run one investigation directly:
 
 ```bash
 python src/agent.py
 ```
 
-## Usage
+## How it works
 
-### API Endpoints
+```text
+DISCOVERY (SERP API) -> ACCESS (Web Unlocker) -> ACTION (OpenAI + OpenHands SDK)
+  search Google          bypass paywalls          analyze risks
+  for red flags          and CAPTCHAs             generate scripts
+```
 
-#### Start Investigation
+```text
+tprm-agent/
+├── src/
+│   ├── config.py      # settings
+│   ├── discovery.py   # SERP API
+│   ├── access.py      # Web Unlocker
+│   ├── actions.py     # OpenAI + OpenHands SDK
+│   ├── agent.py       # orchestration
+│   └── browser.py     # Browser API (optional)
+├── api/main.py        # FastAPI endpoints
+├── scripts/generated/ # generated monitors
+├── run_investigation.py
+└── Procfile
+```
+
+Risk categories live in `RISK_CATEGORIES` in `src/discovery.py`; add your own keywords there.
+
+### API
+
+Start an investigation:
 
 ```bash
 curl -X POST "http://localhost:8000/investigate" \
   -H "Content-Type: application/json" \
-  -d '{
-    "vendor_name": "Acme Corp",
-    "categories": ["litigation", "fraud"],
-    "generate_monitors": true
-  }'
+  -d '{"vendor_name": "Acme Corp", "categories": ["litigation", "fraud"], "generate_monitors": true}'
 ```
 
-Response:
+Other endpoints: `GET /investigate/{investigation_id}` for results, `GET /reports/{vendor_name}`, and `GET /health`.
 
-```json
-{
- "investigation_id": "uuid-here",
- "status": "started",
- "message": "Investigation started for Acme Corp"
-}
-```
+Request fields: `vendor_name` (required), `categories` (optional), `generate_monitors` (optional, default true). A result includes `total_sources_found`, `total_sources_accessed`, `risk_assessments` (category, severity, summary, key findings, sources, recommended actions), `monitoring_scripts` and `errors`.
 
-#### Get Investigation Results
-
-```bash
-curl http://localhost:8000/investigate/{investigation_id}
-```
-
-#### Health Check
-
-```bash
-curl http://localhost:8000/health
-```
-
-### Python Usage
+Python use:
 
 ```python
 from src.agent import TPRMAgent
 
-# Initialize agent
 agent = TPRMAgent()
-
-# Run investigation
 result = agent.investigate(
     vendor_name="Acme Corp",
     categories=["litigation", "financial", "fraud"],
-    generate_monitors=True
+    generate_monitors=True,
 )
-
-# Print results
-print(f"Found {result.total_sources_found} sources")
-print(f"Risk Assessments: {len(result.risk_assessments)}")
-
-for assessment in result.risk_assessments:
-    print(f"\n[{assessment.category}] Severity: {assessment.severity}")
-    print(f"Summary: {assessment.summary}")
 ```
 
-## Project Structure
-
-```
-tprm-agent/
-├── src/
-│   ├── __init__.py
-│   ├── config.py         # Configuration and settings
-│   ├── discovery.py      # SERP API integration
-│   ├── access.py         # Web Unlocker integration
-│   ├── actions.py        # OpenAI + OpenHands SDK
-│   ├── agent.py          # Main orchestration
-│   └── browser.py        # Browser API (optional)
-├── api/
-│   └── main.py           # FastAPI endpoints
-├── scripts/
-│   └── generated/        # Auto-generated monitoring scripts
-├── .env                  # Environment variables (not in git)
-├── requirements.txt      # Python dependencies
-├── Procfile             # Railway deployment config
-└── README.md
-```
-
-## Deployment
-
-### Deploy to Railway
-
-1. **Install Railway CLI:**
-
-```bash
-npm i -g @railway/cli
-```
-
-2. **Login and initialize:**
-
-```bash
-railway login
-railway init
-```
-
-3. **Deploy:**
-
-```bash
-railway up
-```
-
-4. **Add environment variables** in Railway dashboard → Variables
-
-5. **Generate domain:**
-
-```bash
-railway domain
-```
-
-### Deploy to Render
-
-1. **Create `render.yaml`** (already included)
-
-2. **Push to GitHub**
-
-3. **Connect to Render:**
-
-   - Go to [render.com](https://render.com)
-   - New → Web Service
-   - Connect your repository
-   - Render auto-detects configuration
-
-4. **Add environment variables** in Render dashboard
-
-## Monitoring Scripts
-
-After investigation, auto-generated monitoring scripts are saved in `scripts/generated/`:
-
-### Run Monitoring Script
+Run or schedule a generated monitor:
 
 ```bash
 cd scripts/generated
 python monitor_acme_corp.py
+# cron: 0 9 * * * cd /path/to/tprm-agent/scripts/generated && python3 monitor_acme_corp.py
 ```
 
-### Schedule with Cron
+### Deploy to Railway
 
 ```bash
-crontab -e
+npm i -g @railway/cli
+railway login
+railway init
+railway up
 ```
 
-Add:
+Add the environment variables in the Railway dashboard under Variables, then generate a domain. The `Procfile` runs `uvicorn api.main:app --host 0.0.0.0 --port $PORT`.
 
-```
-0 9 * * * cd /path/to/tprm-agent/scripts/generated && python3 monitor_acme_corp.py
-```
+### Troubleshooting
 
-## Configuration
+- **Bright Data auth errors**: Check the token and zone names, zone status and available bandwidth.
+- **OpenAI rate limits**: Add retries or reduce concurrency.
+- **Generated scripts skip Bright Data**: Check the Web Unlocker instructions in the prompt in `actions.py`.
+- **Deployment failures**: Check dependency size and the `Procfile`.
 
-### Bright Data Setup
-
-1. **SERP API Zone:**
-
-   - Go to Bright Data dashboard → Proxies & Scraping Infrastructure
-   - Add → SERP API
-   - Copy zone name and API token
-
-2. **Web Unlocker Zone:**
-
-   - Add → Web Unlocker
-   - Copy zone name
-
-3. **Browser API (Optional):**
-   - Add → Scraping Browser
-   - Copy credentials for advanced scenarios
-
-### Risk Categories
-
-Modify `src/discovery.py` to add custom risk categories:
-
-```python
-RISK_CATEGORIES = {
-    "litigation": ["lawsuit", "litigation", "sued"],
-    "financial": ["bankruptcy", "insolvency", "debt"],
-    "fraud": ["fraud", "scam", "investigation"],
-    "regulatory": ["violation", "fine", "penalty"],
-    "operational": ["recall", "safety issue", "disruption"],
-    # Add your custom categories here
-}
-```
-
-## API Reference
-
-### Investigation Request
-
-```json
-{
-  "vendor_name": "string (required)",
-  "categories": ["litigation", "fraud"] (optional),
-  "generate_monitors": true (optional, default: true)
-}
-```
-
-### Investigation Result
-
-```json
-{
- "vendor_name": "string",
- "started_at": "ISO 8601 timestamp",
- "completed_at": "ISO 8601 timestamp",
- "total_sources_found": 0,
- "total_sources_accessed": 0,
- "risk_assessments": [
-  {
-   "vendor_name": "string",
-   "category": "string",
-   "severity": "low|medium|high|critical",
-   "summary": "string",
-   "key_findings": ["string"],
-   "sources": ["url"],
-   "recommended_actions": ["string"],
-   "assessed_at": "ISO 8601 timestamp"
-  }
- ],
- "monitoring_scripts": [
-  {
-   "vendor_name": "string",
-   "script_path": "string",
-   "urls_monitored": ["url"],
-   "check_frequency": "daily",
-   "created_at": "ISO 8601 timestamp"
-  }
- ],
- "errors": ["string"]
-}
-```
-
-## Advanced Features
-
-### Using Browser API
-
-For JavaScript-heavy sites or complex workflows:
-
-```python
-from src.browser import BrowserClient
-import asyncio
-
-async def search_court_registry():
-    client = BrowserClient()
-
-    result = await client.fill_and_submit_form(
-        url="https://court-registry.example.com/search",
-        form_data={
-            "#party-name": "Acme Corp",
-            "#case-type": "civil",
-        },
-        submit_selector="#search-button",
-        result_selector=".search-results",
-    )
-
-    if result.success:
-        print(f"Court records: {result.text}")
-
-asyncio.run(search_court_registry())
-```
-
-## Troubleshooting
-
-### Common Issues
-
-**Authentication errors with Bright Data:**
-
-- Verify API token and zone names in `.env`
-- Check zone status in Bright Data dashboard
-- Ensure zones have available bandwidth
-
-**OpenAI rate limits:**
-
-- Add retry logic or reduce concurrent requests
-- Upgrade OpenAI plan for higher limits
-
-**Generated scripts not using Bright Data:**
-
-- Check that OpenHands SDK prompt includes Web Unlocker instructions
-- Verify `actions.py` has the correct prompt template
-
-**Deployment failures:**
-
-- Check dependency sizes (Railway/Render support larger apps than Vercel)
-- Verify `Procfile` exists and is correct
-- Ensure all environment variables are set
-
-## Performance Tips
-
-- **Parallel requests:** Modify `access.py` to use `asyncio` for faster content extraction
-- **Caching:** Implement Redis caching for repeated vendor investigations
-- **Rate limiting:** Add rate limiting middleware to prevent API abuse
-- **Database:** Use PostgreSQL to persist investigation history
-
-## Security
-
-- Never commit `.env` file to git
-- Use Railway/Render environment variables for production
-- Rotate API keys regularly
-- Implement authentication on API endpoints for production use
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-MIT License - see LICENSE file for details
+Security: do not commit `.env`, use platform variables in production, rotate keys, and add authentication to the API before exposing it.
 
 ## Resources
 
-- [Bright Data SERP API Documentation](https://docs.brightdata.com/scraping-automation/serp-api/introduction)
-- [Bright Data Web Unlocker Documentation](https://docs.brightdata.com/scraping-automation/web-unlocker/introduction)
-- [Bright Data Browser API Documentation](https://docs.brightdata.com/scraping-automation/scraping-browser/introduction)
-- [OpenHands SDK Documentation](https://docs.openhands.dev/sdk/getting-started)
-- [OpenAI API Documentation](https://platform.openai.com/docs)
-- [FastAPI Documentation](https://fastapi.tiangolo.com/)
+- [Bright Data SERP API docs](https://docs.brightdata.com/scraping-automation/serp-api/introduction): Search zone setup.
+- [Bright Data Web Unlocker docs](https://docs.brightdata.com/scraping-automation/web-unlocker/introduction): Unlocker zone setup.
+- [Bright Data Browser API docs](https://docs.brightdata.com/scraping-automation/scraping-browser/introduction): Scraping Browser.
+- [OpenHands SDK docs](https://docs.openhands.dev/sdk/getting-started): Agent SDK.
+- [Bright Data](https://brightdata.com): Account and API token.
 
-## Support
+<br />
 
-For issues and questions:
+---
 
-- Open an issue on GitHub
-- Check Bright Data documentation
-- Review OpenHands SDK examples
+<div align="center">
 
-## Roadmap
+<a href="https://studio1hq.com">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Studio1HQ/website/main/brand/studio1-logo-on-dark.svg" />
+    <img src="https://raw.githubusercontent.com/Studio1HQ/website/main/brand/studio1-logo-on-light.svg" alt="Studio1" width="160" />
+  </picture>
+</a>
 
-- [ ] Add support for SEC filings and OFAC sanctions lists
-- [ ] Implement PostgreSQL database for investigation history
-- [ ] Add Slack/Teams webhook notifications
-- [ ] Build React dashboard for visualization
-- [ ] Support batch vendor investigations
-- [ ] Add PDF report generation
-- [ ] Implement user authentication
-- [ ] Add multi-language support
+Built by **[Studio1](https://studio1hq.com)**, the technical content and DevRel partner for devtool teams. Made with [Bright Data](https://brightdata.com).<br />
+Browse more open-source examples at [github.com/Studio1HQ](https://github.com/Studio1HQ).
+
+[![Website](https://img.shields.io/badge/studio1hq.com-0b0807?style=for-the-badge&logo=googlechrome&logoColor=white)](https://studio1hq.com)
+[![Book a call](https://img.shields.io/badge/Book_a_strategy_call-f97316?style=for-the-badge&logo=googlecalendar&logoColor=white)](https://cal.com/studio1/collab)
+[![X](https://img.shields.io/badge/%40Studio1HQ-141414?style=for-the-badge&logo=x&logoColor=white)](https://x.com/Studio1HQ)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0a66c2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/company/studio1hq/)
+
+<sub><a href="https://studio1hq.com">studio1hq.com</a> · Technical content, docs, video and DevRel for devtools</sub>
+
+</div>
